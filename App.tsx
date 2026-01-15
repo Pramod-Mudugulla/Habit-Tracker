@@ -39,7 +39,7 @@ const App: React.FC = () => {
   // Achievement Engine
   const achievements = useMemo((): Achievement[] => {
     const totalCompletions = logs.length;
-    const maxStreak = 12; // Static for demo, would be calculated from logs
+    const maxStreak = 12; // Static for demo
     const masteryCount = habits.filter(h => {
         const rate = (logs.filter(l => l.habitId === h.id).length / 30) * 100;
         return rate > 90;
@@ -331,55 +331,106 @@ const App: React.FC = () => {
 
           {activeTab === 'habits' && (
             <div className="xl:col-span-12 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-               <div className="flex flex-col md:flex-row justify-between items-center bg-white p-12 lg:p-16 rounded-[64px] border border-[#EAEAEA] shadow-sm gap-12">
+               <div className="flex flex-col md:flex-row justify-between items-center bg-white p-12 lg:p-16 rounded-[64px] border border-[#EAEAEA] shadow-sm gap-12 group hover:border-[#1A1A1A] transition-all duration-700">
                 <div className="max-w-xl">
-                  <h3 className="text-5xl font-black tracking-tighter text-[#1A1A1A]">System Protocols.</h3>
-                  <p className="text-gray-400 text-base mt-4 font-medium leading-relaxed">Deconstruct your high-performance behavior architecture. Audit, refactor, or decommission protocols to maintain operational integrity.</p>
+                  <h3 className="text-5xl lg:text-6xl font-black tracking-tighter text-[#1A1A1A]">Core Registry.</h3>
+                  <p className="text-gray-400 text-base mt-6 font-medium leading-relaxed max-w-lg">
+                    Manage the foundational behavioral stack. Audit operational parameters, recalibrate priority tiers, or decommission underperforming protocols.
+                  </p>
                 </div>
                 <button 
                   onClick={() => setIsAddingHabit(true)}
-                  className="bg-[#1A1A1A] text-white px-16 py-6 lg:px-20 lg:py-8 rounded-[32px] text-xs font-black uppercase tracking-[0.5em] shadow-3xl shadow-black/20 hover:bg-black transition-all active:scale-95 whitespace-nowrap"
+                  className="bg-[#1A1A1A] text-white px-16 py-6 lg:px-20 lg:py-8 rounded-[40px] text-xs font-black uppercase tracking-[0.5em] shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:bg-black hover:scale-105 transition-all active:scale-95 whitespace-nowrap"
                 >
-                  New Protocol
+                  Append Protocol
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
-                {habits.map(habit => (
-                  <div key={habit.id} className="bg-white p-10 lg:p-14 border border-[#EAEAEA] rounded-[64px] hover:border-[#1A1A1A] transition-all duration-700 group shadow-sm flex flex-col justify-between h-full relative overflow-hidden hover:-translate-y-4">
-                    <div className="absolute top-0 right-0 w-64 h-64 blur-[120px] opacity-10 transition-all duration-1000 group-hover:opacity-30" style={{ backgroundColor: habit.color }} />
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-start mb-12 lg:mb-16">
-                        <span className="text-[10px] font-black uppercase tracking-[0.5em] px-6 py-3 lg:px-8 lg:py-4 rounded-full bg-gray-50 text-gray-400 border border-gray-100 group-hover:bg-[#1A1A1A] group-hover:text-white transition-all duration-700">
-                          {habit.category}
-                        </span>
-                        <div className={`text-[9px] font-black uppercase tracking-[0.4em] px-4 py-2 lg:px-6 lg:py-3 rounded-2xl border ${habit.priority === 'high' ? 'text-red-500 border-red-100 bg-red-50/50' : 'text-gray-300 border-gray-100 bg-gray-50'}`}>
-                          {habit.priority}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 lg:gap-16">
+                {habits.length > 0 ? (
+                  habits.map(habit => {
+                    const habitLogs = logs.filter(l => l.habitId === habit.id);
+                    const allTimeRate = Math.round((habitLogs.length / 90) * 100); // normalized
+                    const mastery = allTimeRate > 85;
+
+                    return (
+                      <div key={habit.id} className="bg-white p-10 lg:p-14 border border-[#EAEAEA] rounded-[64px] hover:border-[#1A1A1A] transition-all duration-700 group shadow-[0_4px_32px_rgba(0,0,0,0.01)] flex flex-col justify-between h-full relative overflow-hidden hover:-translate-y-4">
+                        <div className="absolute top-0 right-0 w-80 h-80 blur-[130px] opacity-10 transition-all duration-1000 group-hover:opacity-40" style={{ backgroundColor: habit.color }} />
+                        
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-start mb-12">
+                            <div className="flex flex-col gap-2">
+                              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 opacity-60">
+                                {habit.category}
+                              </span>
+                              <div className={`text-[9px] font-black uppercase tracking-[0.4em] px-4 py-2 rounded-xl border w-fit ${
+                                habit.priority === 'high' 
+                                  ? 'text-red-500 border-red-100 bg-red-50/50' 
+                                  : habit.priority === 'medium'
+                                    ? 'text-amber-500 border-amber-100 bg-amber-50/50'
+                                    : 'text-emerald-500 border-emerald-100 bg-emerald-50/50'
+                              }`}>
+                                {habit.priority} Tier
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                               <div className="text-3xl font-black tracking-tighter" style={{ color: habit.color }}>{allTimeRate}%</div>
+                               <div className="text-[8px] font-black uppercase tracking-widest text-gray-300">All-Time Yield</div>
+                            </div>
+                          </div>
+                          
+                          <h4 className="text-4xl lg:text-5xl font-black tracking-tighter mb-6 group-hover:text-[#1A1A1A] transition-colors leading-[0.9]">{habit.name}</h4>
+                          <p className="text-sm text-gray-400 mb-12 leading-relaxed font-semibold italic opacity-80 min-h-[40px] border-l-2 border-gray-50 pl-6">
+                            "{habit.notes || 'Structural constraints not defined.'}"
+                          </p>
+
+                          <div className="grid grid-cols-2 gap-6 mb-12 bg-gray-50/50 p-6 rounded-[32px] border border-gray-100">
+                             <div className="flex flex-col">
+                                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-400 mb-1">Status</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${mastery ? 'text-emerald-500' : 'text-[#1A1A1A]'}`}>
+                                   {mastery ? 'Peak Mastery' : 'In Calibration'}
+                                </span>
+                             </div>
+                             <div className="flex flex-col text-right">
+                                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-400 mb-1">Frequency</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#1A1A1A]">{habit.frequency}</span>
+                             </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-10 border-t border-[#F8F8F8] relative z-10">
+                          <div className="flex items-center gap-6">
+                            <div className="w-4 h-4 rounded-full shadow-inner animate-pulse" style={{ backgroundColor: habit.color }} />
+                            <span className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em]">{habit.startDate} EST.</span>
+                          </div>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setDecommissionId(habit.id); }}
+                            className="p-5 text-gray-300/40 hover:text-red-500 transition-all rounded-[24px] hover:bg-red-50 active:scale-75 flex items-center gap-3 group/del"
+                            title="Decommission Protocol"
+                          >
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-0 group-hover/del:opacity-100 transition-all">Decommission</span>
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
-                      <h4 className="text-4xl lg:text-5xl font-black tracking-tighter mb-8 lg:mb-10 group-hover:text-[#1A1A1A] transition-colors leading-[0.9]">{habit.name}</h4>
-                      <p className="text-sm text-gray-400 mb-12 lg:mb-16 leading-relaxed font-semibold italic opacity-60">
-                        "{habit.notes || 'No constraints defined.'}"
-                      </p>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-1 md:col-span-2 xl:col-span-3 py-40 border-4 border-dashed border-gray-100 rounded-[64px] flex flex-col items-center justify-center text-center px-12 group hover:border-gray-200 transition-all cursor-pointer" onClick={() => setIsAddingHabit(true)}>
+                    <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-10 group-hover:scale-110 transition-transform">
+                       <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                       </svg>
                     </div>
-                    
-                    <div className="flex items-center justify-between pt-12 lg:pt-16 border-t border-gray-50 relative z-10">
-                      <div className="flex items-center gap-4 lg:gap-6">
-                        <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: habit.color }} />
-                        <span className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em]">{habit.frequency}</span>
-                      </div>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setDecommissionId(habit.id); }}
-                        className="p-4 lg:p-5 text-gray-300/40 hover:text-red-500 transition-all rounded-3xl hover:bg-red-50 active:scale-75"
-                        title="Decommission Protocol"
-                      >
-                        <svg className="w-6 h-6 lg:w-7 lg:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
+                    <h4 className="text-3xl font-black tracking-tighter text-gray-300 mb-4 uppercase italic">Registry Offline.</h4>
+                    <p className="text-gray-400 font-medium max-w-sm mb-12">No high-performance protocols detected in the core stack. Initialize the registry to begin performance optimization.</p>
+                    <button className="text-[10px] font-black uppercase tracking-[0.5em] px-12 py-5 bg-[#1A1A1A] text-white rounded-[32px] shadow-2xl shadow-black/20">
+                       Append Initial Stack
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
